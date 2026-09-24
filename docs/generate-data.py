@@ -1,4 +1,4 @@
-"""Génère les données Laravel et un export SQL complet à partir des questions ci-dessous."""
+"""Génère les données de test du front et un export SQL séparé, sans modifier le back."""
 import json
 from pathlib import Path
 
@@ -48,7 +48,7 @@ for category, pairs in GROUPS.items():
         answers = [correct] + [answer for _, answer in pairs if answer != correct]
         questions.append({'categorie': category, 'question': title, **{f'reponse{i}': answer for i, answer in enumerate(answers, 1)}})
 
-data_dir = ROOT / 'back/database/data'
+data_dir = ROOT / 'front/tests/fixtures'
 data_dir.mkdir(parents=True, exist_ok=True)
 (data_dir / 'questions.json').write_text(json.dumps(questions, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
@@ -61,5 +61,5 @@ sql += 'INSERT INTO categories (categorie) VALUES\n' + ',\n'.join('(' + quote(c)
 columns = list(questions[0])
 sql += 'INSERT INTO questions (' + ', '.join(columns) + ') VALUES\n'
 sql += ',\n'.join('(' + ', '.join(quote(q[c]) for c in columns) + ')' for q in questions) + ';\nCOMMIT;\n'
-(ROOT / 'back/culturequizz-complet.sql').write_text(sql, encoding='utf-8')
+(ROOT / 'docs/culturequizz-complet.sql').write_text(sql, encoding='utf-8')
 print(f'{len(questions)} questions, {len(GROUPS)} catégories ; données JSON et export SQL générés.')

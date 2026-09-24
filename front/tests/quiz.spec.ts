@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import questions from "../../back/database/data/questions.json" with { type: "json" };
+import questions from "./fixtures/questions.json" with { type: "json" };
 
 test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
   for (const width of [390, 1440]) {

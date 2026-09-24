@@ -26,7 +26,7 @@ Créer une base MySQL vide nommée `culturequizz` avec un encodage `utf8mb4`. De
 ```powershell
 cd back
 composer install
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
 Dans `back/.env`, renseigner les paramètres locaux :
@@ -41,17 +41,18 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-Puis lancer :
+Sur une nouvelle installation, importer `docs/culturequizz-complet.sql` dans la base dédiée vide avec phpMyAdmin, puis lancer :
 
 ```powershell
 php artisan key:generate
-php artisan migrate --seed
 php artisan serve --host=127.0.0.1 --port=8000
 ```
 
-Le seeder ajoute 3 catégories et 30 questions (10 réponses par question). Il peut être relancé avec `php artisan db:seed` sans dupliquer ces questions. Les données sont dans `back/database/data/questions.json`.
+L’export SQL contient 3 catégories et 30 questions avec 10 réponses chacune. Il remplace les tables du même nom : ne pas l’importer dans une base contenant des données à conserver. Si votre base est déjà remplie, gardez-la et démarrez simplement le serveur.
 
-**Alternative aux migrations :** importer `back/culturequizz-complet.sql` dans une base dédiée vide, avec phpMyAdmin ou le client MySQL, puis lancer le serveur. Cet export comprend le schéma et les données ; il remplace les tables du même nom. Ne pas exécuter les migrations après cet import : l’export d’origine ne contient pas leur historique. `back/culturequizz.sql` est conservé tel que fourni et ne contient que le schéma.
+Ne pas exécuter les migrations après cet import : l’export d’origine ne contient pas leur historique. Pour créer uniquement les tables vides, utiliser `php artisan migrate` à la place de l’import, puis ajouter les catégories et questions avec les formulaires du back. `back/culturequizz.sql` reste le schéma original du professeur.
+
+Le back ne dépend d’aucun JSON ajouté. `front/tests/fixtures/questions.json` sert uniquement aux tests navigateur, pas à l’application en fonctionnement.
 
 ### 2. Front React
 
@@ -93,10 +94,9 @@ front/src/
   styles.css      Charte et styles mobile first
 back/
   routes/api.php  Routes du professeur
-  database/data/  Questions initiales
-  database/seeders/QuizSeeder.php
-  culturequizz-complet.sql
+  culturequizz.sql Schéma original du professeur
 docs/
+  culturequizz-complet.sql Export avec données, séparé du back
   presentation.md Guide pour préparer l’oral et le rendu
 ```
 
