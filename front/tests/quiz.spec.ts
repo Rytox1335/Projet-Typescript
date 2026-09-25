@@ -2,15 +2,22 @@ import { test, expect } from "@playwright/test";
 import questions from "./fixtures/questions.json" with { type: "json" };
 
 test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
-  for (const width of [390, 1440]) {
+  for (const width of [375, 768, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
     await expect(
-      page.getByRole("link", { name: "À vous de jouer" }),
+      page.getByRole("link", { name: "Commencer le quiz" }),
     ).toBeInViewport();
     await page.screenshot({
       path: testInfo.outputPath(`accueil-${width}.png`),
-      fullPage: true, animations: "disabled",
+      fullPage: true,
+      animations: "disabled",
+    });
+    await page.goto("/categories");
+    await expect(page.locator(".category")).toHaveCount(1);
+    await page.screenshot({
+      path: testInfo.outputPath(`categories-${width}.png`),
+      fullPage: true,
     });
     await page.goto("/quiz/Histoire");
     await expect(page.locator(".choice")).toHaveCount(4);
@@ -21,7 +28,8 @@ test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
     ).toBe(true);
     await page.screenshot({
       path: testInfo.outputPath(`quiz-${width}.png`),
-      fullPage: true, animations: "disabled",
+      fullPage: true,
+      animations: "disabled",
     });
   }
 });
@@ -39,13 +47,13 @@ test.beforeEach(async ({ page }) => {
 test("parcours mobile : dix bonnes réponses et bilan", async ({ page }) => {
   await page.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Culture\s*Quiz\./ }),
+    page.getByRole("heading", { name: /Culture\s*Quiz/ }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "À vous de jouer" }).click();
+  await page.getByRole("link", { name: "Commencer le quiz" }).click();
   await page.getByRole("link", { name: /Histoire/ }).click();
   for (let i = 0; i < 10; i++) {
     await expect(
-      page.getByText(`QUESTION ${String(i + 1).padStart(2, "0")}`, {
+      page.getByText(`Question ${i + 1} / 10`, {
         exact: false,
       }),
     ).toBeVisible();
@@ -69,7 +77,9 @@ test("parcours mobile : dix bonnes réponses et bilan", async ({ page }) => {
     ),
   ).toBe(true);
   await page.getByRole("link", { name: "Rejouer" }).click();
-  await expect(page.getByText("QUESTION 01", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Question 1 / 10", { exact: false }),
+  ).toBeVisible();
 });
 
 test("expiration, mauvaise réponse et verrouillage des choix", async ({
@@ -81,7 +91,9 @@ test("expiration, mauvaise réponse et verrouillage des choix", async ({
   await page.clock.fastForward(30_100);
   await expect(page.getByRole("status")).toContainText("Temps écoulé");
   await page.clock.fastForward(1_500);
-  await expect(page.getByText("QUESTION 02", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Question 2 / 10", { exact: false }),
+  ).toBeVisible();
   const title = await page.getByRole("heading", { level: 1 }).innerText();
   const correct = questions.find((q) => q.question === title)!.reponse1;
   await page.locator(".choice").filter({ hasNotText: correct }).first().click();
@@ -89,7 +101,9 @@ test("expiration, mauvaise réponse et verrouillage des choix", async ({
   for (const button of await page.locator(".choice").all())
     await expect(button).toBeDisabled();
   await page.clock.fastForward(1_500);
-  await expect(page.getByText("QUESTION 03", { exact: false })).toBeVisible();
+  await expect(
+    page.getByText("Question 3 / 10", { exact: false }),
+  ).toBeVisible();
   await expect(page.getByText("0 point", { exact: true })).toBeVisible();
 });
 
@@ -109,4 +123,3 @@ test("erreur réseau, nouvel essai et catégorie insuffisante", async ({
   await page.getByRole("link", { name: /Histoire/ }).click();
   await expect(page.getByRole("alert")).toContainText("au moins 10");
 });
-

@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { getCategories, errorMessage } from "../lib/api";
 import type { Category } from "../lib/quiz";
 import { Feedback } from "../components/Feedback";
+import { categoryImage } from "../lib/categoryImage";
 
 export function Categories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -25,14 +26,9 @@ export function Categories() {
   }, [attempt]);
   return (
     <main className="content">
-      <p className="eyebrow">01 / CHOISISSEZ VOTRE TERRAIN DE JEU</p>
-      <h1>
-        À chaque curiosité,
-        <br />
-        <em>son quiz.</em>
-      </h1>
+      <h1>Quiz par catégories</h1>
       <p className="intro">
-        Choisissez un thème. Vous avez 10 questions pour faire la différence.
+        Choisissez une catégorie et testez vos connaissances.
       </p>
       {loading ? (
         <p role="status" className="loading">
@@ -42,38 +38,30 @@ export function Categories() {
         <Feedback message={error} retry={() => setAttempt((a) => a + 1)} />
       ) : categories.length === 0 ? (
         <Feedback
-          message="Aucune catégorie n’est disponible pour le moment. Ajoutez les données initiales au serveur."
+          message="Aucune catégorie n’est disponible pour le moment. Réessayez plus tard."
           retry={() => setAttempt((a) => a + 1)}
         />
       ) : (
         <div className="categories">
-          {categories.map((c, i) => (
+          {categories.map((c) => (
             <Link
               className="category"
               to={`/quiz/${encodeURIComponent(c.categorie)}`}
               key={c.id}
             >
-              <span className="category-number">
-                {String(i + 1).padStart(2, "0")}
-              </span>
-              <div>
-                <h2>{c.categorie}</h2>
-                <p>10 questions · 30 secondes par question</p>
+              <div className="category-banner" aria-hidden="true">
+                <img src={categoryImage(c.categorie)} alt="" />
               </div>
-              <span className="category-arrow" aria-hidden="true">
-                ↗
-              </span>
+              <div className="category-body">
+                <h2>{c.categorie}</h2>
+                <span className="category-play">
+                  Jouer au quiz <span aria-hidden="true">→</span>
+                </span>
+              </div>
             </Link>
           ))}
         </div>
       )}
-      <aside className="tip">
-        <span aria-hidden="true">✳</span>
-        <p>
-          <strong>Le saviez-vous ?</strong> Une seule réponse est correcte. Si
-          le temps est écoulé, on passe à la suite !
-        </p>
-      </aside>
     </main>
   );
 }

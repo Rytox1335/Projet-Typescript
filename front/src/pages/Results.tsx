@@ -7,32 +7,28 @@ export function Results({ result }: { result: Result | null }) {
   const total = score(result.answers);
   return (
     <main className="content results">
-      <p className="eyebrow">{result.category} / PARTIE TERMINÉE</p>
-      <h1>
-        {total >= 8
-          ? "Chapeau, la culture !"
-          : total >= 5
-            ? "Bien joué, esprit curieux."
-            : "La curiosité se cultive."}
-      </h1>
+      <p className="result-category">{result.category}</p>
+      <h1>Votre résultat</h1>
       <div className="score">
         <strong>{total}</strong>
         <span>/ {result.answers.length}</span>
       </div>
       <p className="intro">
         {total >= 8
-          ? "Vos connaissances ont fait la différence."
-          : "Chaque question est une nouvelle chose à apprendre."}
+          ? "Très bon score !"
+          : total >= 5
+            ? "Bien joué !"
+            : "Continuez à vous entraîner !"}
       </p>
       <div className="result-actions">
         <Link
           className="button"
           to={`/quiz/${encodeURIComponent(result.category)}`}
         >
-          Rejouer ↗
+          Rejouer
         </Link>
-        <Link className="text-link" to="/categories">
-          Changer de catégorie
+        <Link className="button button-secondary" to="/categories">
+          Choisir une autre catégorie
         </Link>
       </div>
       <details className="review">

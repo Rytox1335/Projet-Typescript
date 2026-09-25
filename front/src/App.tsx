@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { Link, Route, Routes, useLocation } from "react-router-dom";
+import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Logo } from "./components/Logo";
 import { Home } from "./pages/Home";
 import { Categories } from "./pages/Categories";
@@ -20,14 +20,19 @@ export function App() {
       <a className="skip-link" href="#main-content">
         Aller au contenu
       </a>
-      <header className={pathname === "/" ? "header home-header" : "header"}>
-        <Link className="brand" to="/" aria-label="Culture Quiz, accueil">
-          <Logo />
-          <span>
-            Culture Quiz<span className="brand-dot">.</span>
-          </span>
-        </Link>
-        <span className="header-note">À CHAQUE JOUR SA DÉCOUVERTE</span>
+      <header className="header">
+        <div className="header-inner">
+          <Link className="brand" to="/" aria-label="Culture Quiz, accueil">
+            <Logo />
+            <span>Culture Quiz</span>
+          </Link>
+          <nav aria-label="Navigation principale">
+            <NavLink to="/" end>
+              Accueil
+            </NavLink>
+            <NavLink to="/categories">Catégories</NavLink>
+          </nav>
+        </div>
       </header>
       <div id="main-content">
         <Routes>
@@ -51,11 +56,9 @@ export function App() {
           />
         </Routes>
       </div>
-      {pathname !== "/" && (
-        <footer>
-          Culture Quiz <span>Restez curieux.</span>
-        </footer>
-      )}
+      <footer>
+        Culture Quiz <span>10 questions · 30 secondes par question</span>
+      </footer>
     </>
   );
 }

@@ -1,33 +1,36 @@
 import { Link } from "react-router-dom";
-import { Logo } from "../components/Logo";
+import quizImage from "../../img/image quiz page d'acceuil.jpg";
 
 export function Home() {
   return (
-    <main className="home">
-      <div className="home-inner">
-        <div className="eyebrow">LE RENDEZ-VOUS DES ESPRITS CURIEUX</div>
-        <Logo large />
-        <h1>
-          Culture<span>Quiz.</span>
-        </h1>
-        <p className="home-description">
-          Un peu de savoir.
-          <br />
-          Beaucoup de plaisir à jouer.
-        </p>
-        <Link className="button button-light" to="/categories">
-          À vous de jouer <span aria-hidden="true">↗</span>
-        </Link>
-        <div className="home-rules">
-          <span>
-            <strong>10</strong> questions
-          </span>
-          <span>
-            <strong>30</strong> secondes / question
-          </span>
-        </div>
+    <main className="content home">
+      <div>
+        <section>
+          <h1>Culture Quiz</h1>
+          <p className="home-description">Testez votre culture générale</p>
+          <p className="home-rules">10 questions • 30 secondes par question</p>
+          <Link className="button" to="/categories">
+            Commencer le quiz <span aria-hidden="true">→</span>
+          </Link>
+        </section>
+        <section className="rules" aria-labelledby="rules-title">
+          <h2 id="rules-title">Comment jouer ?</h2>
+          <ol>
+            <li>Choisissez une catégorie.</li>
+            <li>Sélectionnez une réponse avant la fin du chrono.</li>
+            <li>
+              Retrouvez votre score et la correction après les 10 questions.
+            </li>
+          </ol>
+        </section>
       </div>
-      <span className="home-bottom">LA CURIOSITÉ EST UN BEAU DÉFAUT.</span>
+      <img
+        className="home-image"
+        src={quizImage}
+        alt="Quiz sur un fond de mosaïque multicolore"
+        width={1280}
+        height={853}
+      />
     </main>
   );
 }

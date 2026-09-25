@@ -112,14 +112,13 @@ function Game({
   return (
     <main className="content game">
       <div className="game-meta">
-        <span className="eyebrow">{category}</span>
+        <span className="game-category">{category}</span>
         <span
           className={`timer ${remaining <= 5 ? "urgent" : ""}`}
           role="timer"
           aria-label={`${remaining} secondes restantes`}
         >
-          <span aria-hidden="true">◷</span> {remaining}
-          <small> s</small>
+          00:{String(remaining).padStart(2, "0")}
         </span>
       </div>
       <div className="time-track" aria-hidden="true">
@@ -127,7 +126,7 @@ function Game({
       </div>
       <div className="question-meta">
         <span>
-          QUESTION {String(answers.length + 1).padStart(2, "0")}{" "}
+          Question {answers.length + 1}{" "}
           <span className="muted">/ {rounds.length}</span>
         </span>
         <span>
@@ -138,9 +137,7 @@ function Game({
         <h1 className="question-title" ref={title} tabIndex={-1}>
           {round.title}
         </h1>
-        <p className="intro">
-          Une question, quatre possibilités. À vous de choisir.
-        </p>
+        <p className="intro">Sélectionnez la bonne réponse.</p>
         <div className="choices">
           {round.choices.map((choice, i) => {
             const correct = pending && choice === round.correct;
@@ -174,7 +171,7 @@ function Game({
             : pending.selected === round.correct
               ? "Bien joué ! C’est la bonne réponse."
               : "Pas cette fois ! La bonne réponse est indiquée en vert."
-          : "Faites confiance à votre curiosité."}
+          : "Une seule réponse est correcte."}
       </p>
       <div
         className="progress-dots"
