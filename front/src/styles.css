@@ -1,5 +1,5 @@
 :root {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Trebuchet MS", Arial, sans-serif;
   color: #203650;
   background: #f3f6fa;
   font-synthesis: none;
@@ -11,6 +11,7 @@
 }
 body {
   margin: 0;
+  font-family: "Trebuchet MS", Arial, sans-serif;
 }
 #root {
   display: flex;
@@ -21,18 +22,17 @@ body {
 #main-content {
   flex: 1;
 }
+button,
 input,
-textarea,
 select,
-optgroup {
-  font-family: inherit;
+textarea {
+  font: inherit;
 }
 a {
   color: inherit;
   text-decoration: none;
 }
 button {
-  font: inherit;
   cursor: pointer;
 }
 button:disabled {
@@ -137,6 +137,12 @@ nav a.active {
 .button:hover {
   background: #194f87;
 }
+.button-icon {
+  display: block;
+  width: 22px;
+  height: auto;
+  object-fit: contain;
+}
 .button-secondary {
   background: white;
   color: #2465a8;
@@ -184,13 +190,25 @@ nav a.active {
   font-size: 17px;
 }
 .rules ol {
+  display: grid;
+  gap: 8px;
+  list-style: none;
   margin: 10px 0 0;
-  padding-left: 22px;
+  padding: 0;
   color: #596a7e;
   font-size: 14px;
 }
 .rules li {
-  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.rule-icon {
+  display: block;
+  flex: 0 0 auto;
+  width: 30px;
+  height: auto;
+  object-fit: contain;
 }
 .categories {
   display: grid;
@@ -268,8 +286,8 @@ nav a.active {
 .timer {
   background: white;
   border: 1px solid #c9d8e9;
-  border-radius: 6px;
-  padding: 4px 12px;
+  border-radius: 4px;
+  padding: 2px 8px;
   color: #174c83;
   font-size: 24px;
   font-weight: 700;
@@ -283,7 +301,7 @@ nav a.active {
 }
 .time-track {
   height: 5px;
-  margin-top: 16px;
+  margin: 8px 0 24px;
   background: #dae3ee;
   border-radius: 4px;
   overflow: hidden;
@@ -298,7 +316,7 @@ nav a.active {
   justify-content: space-between;
   gap: 16px;
   font-size: 14px;
-  margin: 16px 0;
+  margin-top: 16px;
   color: #596a7e;
 }
 .question-meta > span:first-child {
@@ -306,22 +324,16 @@ nav a.active {
   font-weight: 700;
 }
 .question-enter {
-  background: white;
-  padding: 20px 16px;
-  border: 1px solid #dce3ec;
-  border-radius: 8px;
-  animation: appear 0.18s ease;
+  min-width: 0;
 }
 .question-title {
   font-size: 23px;
   line-height: 1.4;
   outline: none;
 }
-.game .intro {
-  font-size: 14px;
-}
 .choices {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin-top: 20px;
 }
@@ -329,14 +341,14 @@ nav a.active {
   display: flex;
   gap: 12px;
   align-items: center;
-  min-height: 64px;
+  min-height: 56px;
   width: 100%;
-  padding: 12px;
+  padding: 14px 16px;
   text-align: left;
   color: #203650;
-  background: #f9fbfe;
+  background: white;
   border: 1px solid #cbd8e7;
-  border-radius: 6px;
+  border-radius: 4px;
   transition:
     background 0.15s,
     border-color 0.15s;
@@ -345,20 +357,11 @@ nav a.active {
   overflow-wrap: anywhere;
   min-width: 0;
 }
-.choice:not(:disabled):hover {
-  background: #eaf2fc;
-  border-color: #2465a8;
-}
-.choice-letter {
-  flex-shrink: 0;
-  display: grid;
-  place-items: center;
-  width: 28px;
-  height: 28px;
-  background: #e8eff8;
-  border-radius: 4px;
-  font-size: 13px;
-  font-weight: 700;
+@media (hover: hover) and (pointer: fine) {
+  .choice:not(:disabled):hover {
+    background: #f0f5fb;
+    border-color: #2465a8;
+  }
 }
 .choice.correct {
   background: #e2f3e8;
@@ -370,47 +373,29 @@ nav a.active {
   border-color: #bd4444;
   color: #932929;
 }
-.choice.correct .choice-letter,
-.choice.wrong .choice-letter {
-  background: transparent;
-  border: 1px solid currentColor;
-}
 .choice-mark {
   margin-left: auto;
   font-size: 22px;
   font-weight: 700;
 }
 .answer-feedback {
-  min-height: 42px;
-  margin: 14px 0 4px;
+  min-height: 21px;
+  margin: 12px 0 0;
   font-size: 14px;
   color: #596a7e;
-  text-align: center;
-}
-.progress-dots {
-  display: flex;
-  justify-content: center;
-  gap: 6px;
-  margin-bottom: 8px;
-}
-.progress-dots span {
-  width: 20px;
-  height: 6px;
-  border-radius: 3px;
-  background: #d7e0eb;
-}
-.progress-dots .dot-active {
-  background: #2465a8;
-}
-.progress-dots .dot-correct {
-  background: #32814c;
-}
-.progress-dots .dot-wrong {
-  background: #bd4444;
+  text-align: left;
 }
 .game > .text-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  text-align: left;
+}
+.back-icon {
   display: block;
-  text-align: center;
+  width: 20px;
+  height: auto;
+  object-fit: contain;
 }
 .results {
   max-width: 780px;
@@ -540,14 +525,8 @@ footer {
   .choices {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  .question-enter {
-    padding: 24px;
-  }
   .question-title {
-    font-size: 26px;
-  }
-  .choice {
-    min-height: 76px;
+    font-size: 28px;
   }
   .result-actions {
     flex-direction: row;

@@ -8,6 +8,21 @@ test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
     await expect(
       page.getByRole("link", { name: "Commencer le quiz" }),
     ).toBeInViewport();
+    await expect(page.locator(".button-icon")).toHaveJSProperty(
+      "complete",
+      true,
+    );
+    await expect(page.locator(".rule-icon")).toHaveCount(3);
+    for (const icon of await page.locator(".button-icon, .rule-icon").all()) {
+      expect(
+        await icon.evaluate((image: HTMLImageElement) => image.naturalWidth),
+      ).toBeGreaterThan(0);
+    }
+    expect(
+      await page
+        .locator("body")
+        .evaluate((body) => getComputedStyle(body).fontFamily),
+    ).toContain("Trebuchet MS");
     await page.screenshot({
       path: testInfo.outputPath(`accueil-${width}.png`),
       fullPage: true,
@@ -21,6 +36,12 @@ test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
     });
     await page.goto("/quiz/Histoire");
     await expect(page.locator(".choice")).toHaveCount(4);
+    await expect(page.locator(".back-icon")).toHaveJSProperty("complete", true);
+    expect(
+      await page
+        .locator(".back-icon")
+        .evaluate((image: HTMLImageElement) => image.naturalWidth),
+    ).toBeGreaterThan(0);
     expect(
       await page.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,

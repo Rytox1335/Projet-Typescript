@@ -4,6 +4,7 @@ import { getQuestions, errorMessage } from "../lib/api";
 import { prepareQuiz, QUESTION_SECONDS, score } from "../lib/quiz";
 import type { Answer, Result, Round } from "../lib/quiz";
 import { Feedback } from "../components/Feedback";
+import backIcon from "../../img/icon/back arrow.png";
 
 export function Quiz({ onComplete }: { onComplete: (result: Result) => void }) {
   const { category = "" } = useParams();
@@ -121,9 +122,6 @@ function Game({
           00:{String(remaining).padStart(2, "0")}
         </span>
       </div>
-      <div className="time-track" aria-hidden="true">
-        <div style={{ width: `${(remaining / QUESTION_SECONDS) * 100}%` }} />
-      </div>
       <div className="question-meta">
         <span>
           Question {answers.length + 1}{" "}
@@ -133,13 +131,15 @@ function Game({
           {score(answers)} point{score(answers) > 1 ? "s" : ""}
         </span>
       </div>
+      <div className="time-track" aria-hidden="true">
+        <div style={{ width: `${(remaining / QUESTION_SECONDS) * 100}%` }} />
+      </div>
       <section key={round.id} className="question-enter">
         <h1 className="question-title" ref={title} tabIndex={-1}>
           {round.title}
         </h1>
-        <p className="intro">Sélectionnez la bonne réponse.</p>
         <div className="choices">
-          {round.choices.map((choice, i) => {
+          {round.choices.map((choice) => {
             const correct = pending && choice === round.correct;
             const wrong = pending && pending.selected === choice && !correct;
             return (
@@ -149,7 +149,6 @@ function Game({
                 onClick={() => submit(choice)}
                 key={choice}
               >
-                <span className="choice-letter">{"ABCD"[i]}</span>
                 <span>{choice}</span>
                 {(correct || wrong) && (
                   <span
@@ -171,29 +170,11 @@ function Game({
             : pending.selected === round.correct
               ? "Bien joué ! C’est la bonne réponse."
               : "Pas cette fois ! La bonne réponse est indiquée en vert."
-          : "Une seule réponse est correcte."}
+          : ""}
       </p>
-      <div
-        className="progress-dots"
-        aria-label={`${answers.length} questions terminées sur 10`}
-      >
-        {rounds.map((r, i) => (
-          <span
-            key={r.id}
-            className={
-              i < answers.length
-                ? answers[i].selected === r.correct
-                  ? "dot-correct"
-                  : "dot-wrong"
-                : i === answers.length
-                  ? "dot-active"
-                  : ""
-            }
-          />
-        ))}
-      </div>
       <Link className="text-link" to="/categories">
-        ← Quitter la partie
+        <img className="back-icon" src={backIcon} alt="" />
+        <span>Quitter la partie</span>
       </Link>
     </main>
   );
