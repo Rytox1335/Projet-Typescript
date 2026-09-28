@@ -1,29 +1,29 @@
 import { Link, Navigate } from "react-router-dom";
-import { score } from "../lib/quiz";
+import { calculerScore } from "../lib/quiz";
 import type { Result } from "../lib/quiz";
 
-export function Results({ result }: { result: Result | null }) {
-  if (!result) return <Navigate to="/categories" replace />;
-  const total = score(result.answers);
+export function Resultats({ resultat }: { resultat: Result | null }) {
+  if (!resultat) return <Navigate to="/categories" replace />;
+  const bonnesReponses = calculerScore(resultat.answers);
   return (
     <main className="content results">
-      <p className="result-category">{result.category}</p>
+      <p className="result-category">{resultat.category}</p>
       <h1>Votre résultat</h1>
       <div className="score">
-        <strong>{total}</strong>
-        <span>/ {result.answers.length}</span>
+        <strong>{bonnesReponses}</strong>
+        <span>/ {resultat.answers.length}</span>
       </div>
       <p className="intro">
-        {total >= 8
+        {bonnesReponses >= 8
           ? "Très bon score !"
-          : total >= 5
+          : bonnesReponses >= 5
             ? "Bien joué !"
             : "Continuez à vous entraîner !"}
       </p>
       <div className="result-actions">
         <Link
           className="button"
-          to={`/quiz/${encodeURIComponent(result.category)}`}
+          to={`/quiz/${encodeURIComponent(resultat.category)}`}
         >
           Rejouer
         </Link>
@@ -36,23 +36,23 @@ export function Results({ result }: { result: Result | null }) {
           Revoir mes réponses <span aria-hidden="true">＋</span>
         </summary>
         <ol>
-          {result.answers.map((a) => (
-            <li key={a.round.id}>
+          {resultat.answers.map((reponseDonnee) => (
+            <li key={reponseDonnee.round.id}>
               <span
                 className={
-                  a.selected === a.round.correct
+                  reponseDonnee.selected === reponseDonnee.round.correct
                     ? "review-correct"
                     : "review-wrong"
                 }
               >
-                {a.selected === a.round.correct ? "✓" : "×"}
+                {reponseDonnee.selected === reponseDonnee.round.correct ? "✓" : "×"}
               </span>
               <div>
-                <h2>{a.round.title}</h2>
-                <p>Votre réponse : {a.selected ?? "Temps écoulé"}</p>
-                {a.selected !== a.round.correct && (
+                <h2>{reponseDonnee.round.title}</h2>
+                <p>Votre réponse : {reponseDonnee.selected ?? "Temps écoulé"}</p>
+                {reponseDonnee.selected !== reponseDonnee.round.correct && (
                   <p>
-                    <strong>Bonne réponse : {a.round.correct}</strong>
+                    <strong>Bonne réponse : {reponseDonnee.round.correct}</strong>
                   </p>
                 )}
               </div>

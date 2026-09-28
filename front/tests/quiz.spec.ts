@@ -1,146 +1,146 @@
 import { test, expect } from "@playwright/test";
-import questions from "./fixtures/questions.json" with { type: "json" };
+import donneesQuestions from "./fixtures/questions.json" with { type: "json" };
 
-test("mise en page mobile et ordinateur", async ({ page }, testInfo) => {
-  for (const width of [375, 768, 1440]) {
-    await page.setViewportSize({ width, height: 900 });
-    await page.goto("/");
+test("mise en page mobile et ordinateur", async ({ page: navigateur }, infosTest) => {
+  for (const largeur of [375, 768, 1440]) {
+    await navigateur.setViewportSize({ width: largeur, height: 900 });
+    await navigateur.goto("/");
     await expect(
-      page.getByRole("link", { name: "Commencer le quiz" }),
+      navigateur.getByRole("link", { name: "Commencer le quiz" }),
     ).toBeInViewport();
-    await expect(page.locator(".button-icon")).toHaveJSProperty(
+    await expect(navigateur.locator(".button-icon")).toHaveJSProperty(
       "complete",
       true,
     );
-    await expect(page.locator(".rule-icon")).toHaveCount(3);
-    for (const icon of await page.locator(".button-icon, .rule-icon").all()) {
+    await expect(navigateur.locator(".rule-icon")).toHaveCount(3);
+    for (const icone of await navigateur.locator(".button-icon, .rule-icon").all()) {
       expect(
-        await icon.evaluate((image: HTMLImageElement) => image.naturalWidth),
+        await icone.evaluate((imageChargee: HTMLImageElement) => imageChargee.naturalWidth),
       ).toBeGreaterThan(0);
     }
     expect(
-      await page
+      await navigateur
         .locator("body")
-        .evaluate((body) => getComputedStyle(body).fontFamily),
+        .evaluate((corps) => getComputedStyle(corps).fontFamily),
     ).toContain("Trebuchet MS");
-    await page.screenshot({
-      path: testInfo.outputPath(`accueil-${width}.png`),
+    await navigateur.screenshot({
+      path: infosTest.outputPath(`accueil-${largeur}.png`),
       fullPage: true,
       animations: "disabled",
     });
-    await page.goto("/categories");
-    await expect(page.locator(".category")).toHaveCount(1);
-    await page.screenshot({
-      path: testInfo.outputPath(`categories-${width}.png`),
+    await navigateur.goto("/categories");
+    await expect(navigateur.locator(".category")).toHaveCount(1);
+    await navigateur.screenshot({
+      path: infosTest.outputPath(`categories-${largeur}.png`),
       fullPage: true,
     });
-    await page.goto("/quiz/Histoire");
-    await expect(page.locator(".choice")).toHaveCount(4);
-    await expect(page.locator(".back-icon")).toHaveJSProperty("complete", true);
+    await navigateur.goto("/quiz/Histoire");
+    await expect(navigateur.locator(".choice")).toHaveCount(4);
+    await expect(navigateur.locator(".back-icon")).toHaveJSProperty("complete", true);
     expect(
-      await page
+      await navigateur
         .locator(".back-icon")
-        .evaluate((image: HTMLImageElement) => image.naturalWidth),
+        .evaluate((imageChargee: HTMLImageElement) => imageChargee.naturalWidth),
     ).toBeGreaterThan(0);
     expect(
-      await page.evaluate(
+      await navigateur.evaluate(
         () => document.documentElement.scrollWidth <= window.innerWidth,
       ),
     ).toBe(true);
-    await page.screenshot({
-      path: testInfo.outputPath(`quiz-${width}.png`),
+    await navigateur.screenshot({
+      path: infosTest.outputPath(`quiz-${largeur}.png`),
       fullPage: true,
       animations: "disabled",
     });
   }
 });
 
-test.beforeEach(async ({ page }) => {
-  await page.route("https://fonts.googleapis.com/**", (route) => route.abort());
-  await page.route("**/api/categories", (route) =>
-    route.fulfill({ json: [{ id: 1, categorie: "Histoire" }] }),
+test.beforeEach(async ({ page: navigateur }) => {
+  await navigateur.route("https://fonts.googleapis.com/**", (itineraire) => itineraire.abort());
+  await navigateur.route("**/api/categories", (itineraire) =>
+    itineraire.fulfill({ json: [{ id: 1, categorie: "Histoire" }] }),
   );
-  await page.route("**/api/questions", (route) =>
-    route.fulfill({ json: questions.map((q, i) => ({ id: i + 1, ...q })) }),
+  await navigateur.route("**/api/questions", (itineraire) =>
+    itineraire.fulfill({ json: donneesQuestions.map((questionDonnee, index) => ({ id: index + 1, ...questionDonnee })) }),
   );
 });
 
-test("parcours mobile : dix bonnes réponses et bilan", async ({ page }) => {
-  await page.goto("/");
+test("parcours mobile : dix bonnes réponses et bilan", async ({ page: navigateur }) => {
+  await navigateur.goto("/");
   await expect(
-    page.getByRole("heading", { name: /Culture\s*Quiz/ }),
+    navigateur.getByRole("heading", { name: /Culture\s*Quiz/ }),
   ).toBeVisible();
-  await page.getByRole("link", { name: "Commencer le quiz" }).click();
-  await page.getByRole("link", { name: /Histoire/ }).click();
-  for (let i = 0; i < 10; i++) {
+  await navigateur.getByRole("link", { name: "Commencer le quiz" }).click();
+  await navigateur.getByRole("link", { name: /Histoire/ }).click();
+  for (let indice = 0; indice < 10; indice++) {
     await expect(
-      page.getByText(`Question ${i + 1} / 10`, {
+      navigateur.getByText(`Question ${indice + 1} / 10`, {
         exact: false,
       }),
     ).toBeVisible();
-    const title = await page.getByRole("heading", { level: 1 }).innerText();
-    const question = questions.find((q) => q.question === title)!;
-    await expect(page.locator(".choice")).toHaveCount(4);
-    await page
-      .getByRole("button", { name: new RegExp(question.reponse1) })
+    const titreQuestion = await navigateur.getByRole("heading", { level: 1 }).innerText();
+    const questionDonnee = donneesQuestions.find((question) => question.question === titreQuestion)!;
+    await expect(navigateur.locator(".choice")).toHaveCount(4);
+    await navigateur
+      .getByRole("button", { name: new RegExp(questionDonnee.reponse1) })
       .click();
-    await expect(page.locator(".choice.correct")).toContainText(
-      question.reponse1,
+    await expect(navigateur.locator(".choice.correct")).toContainText(
+      questionDonnee.reponse1,
     );
   }
-  await expect(page).toHaveURL(/resultats/);
-  await expect(page.locator(".score strong")).toHaveText("10");
-  await page.getByText("Revoir mes réponses").click();
-  await expect(page.locator(".review li")).toHaveCount(10);
+  await expect(navigateur).toHaveURL(/resultats/);
+  await expect(navigateur.locator(".score strong")).toHaveText("10");
+  await navigateur.getByText("Revoir mes réponses").click();
+  await expect(navigateur.locator(".review li")).toHaveCount(10);
   expect(
-    await page.evaluate(
+    await navigateur.evaluate(
       () => document.documentElement.scrollWidth <= window.innerWidth,
     ),
   ).toBe(true);
-  await page.getByRole("link", { name: "Rejouer" }).click();
+  await navigateur.getByRole("link", { name: "Rejouer" }).click();
   await expect(
-    page.getByText("Question 1 / 10", { exact: false }),
+    navigateur.getByText("Question 1 / 10", { exact: false }),
   ).toBeVisible();
 });
 
 test("expiration, mauvaise réponse et verrouillage des choix", async ({
-  page,
+  page: navigateur,
 }) => {
-  await page.clock.install();
-  await page.goto("/quiz/Histoire");
-  await expect(page.locator(".choice")).toHaveCount(4);
-  await page.clock.fastForward(30_100);
-  await expect(page.getByRole("status")).toContainText("Temps écoulé");
-  await page.clock.fastForward(1_500);
+  await navigateur.clock.install();
+  await navigateur.goto("/quiz/Histoire");
+  await expect(navigateur.locator(".choice")).toHaveCount(4);
+  await navigateur.clock.fastForward(30_100);
+  await expect(navigateur.getByRole("status")).toContainText("Temps écoulé");
+  await navigateur.clock.fastForward(1_500);
   await expect(
-    page.getByText("Question 2 / 10", { exact: false }),
+    navigateur.getByText("Question 2 / 10", { exact: false }),
   ).toBeVisible();
-  const title = await page.getByRole("heading", { level: 1 }).innerText();
-  const correct = questions.find((q) => q.question === title)!.reponse1;
-  await page.locator(".choice").filter({ hasNotText: correct }).first().click();
-  await expect(page.locator(".choice.wrong")).toHaveCount(1);
-  for (const button of await page.locator(".choice").all())
-    await expect(button).toBeDisabled();
-  await page.clock.fastForward(1_500);
+  const titreQuestion = await navigateur.getByRole("heading", { level: 1 }).innerText();
+  const bonneReponse = donneesQuestions.find((question) => question.question === titreQuestion)!.reponse1;
+  await navigateur.locator(".choice").filter({ hasNotText: bonneReponse }).first().click();
+  await expect(navigateur.locator(".choice.wrong")).toHaveCount(1);
+  for (const bouton of await navigateur.locator(".choice").all())
+    await expect(bouton).toBeDisabled();
+  await navigateur.clock.fastForward(1_500);
   await expect(
-    page.getByText("Question 3 / 10", { exact: false }),
+    navigateur.getByText("Question 3 / 10", { exact: false }),
   ).toBeVisible();
-  await expect(page.getByText("0 point", { exact: true })).toBeVisible();
+  await expect(navigateur.getByText("0 point", { exact: true })).toBeVisible();
 });
 
 test("erreur réseau, nouvel essai et catégorie insuffisante", async ({
-  page,
+  page: navigateur,
 }) => {
-  await page.route("**/api/categories", (route) =>
-    route.fulfill({ status: 500, body: "{}" }),
+  await navigateur.route("**/api/categories", (itineraire) =>
+    itineraire.fulfill({ status: 500, body: "{}" }),
   );
-  await page.goto("/categories");
-  await expect(page.getByRole("alert")).toContainText("500");
-  await page.route("**/api/categories", (route) =>
-    route.fulfill({ json: [{ id: 1, categorie: "Histoire" }] }),
+  await navigateur.goto("/categories");
+  await expect(navigateur.getByRole("alert")).toContainText("500");
+  await navigateur.route("**/api/categories", (itineraire) =>
+    itineraire.fulfill({ json: [{ id: 1, categorie: "Histoire" }] }),
   );
-  await page.getByRole("button", { name: "Réessayer" }).click();
-  await page.route("**/api/questions", (route) => route.fulfill({ json: [] }));
-  await page.getByRole("link", { name: /Histoire/ }).click();
-  await expect(page.getByRole("alert")).toContainText("au moins 10");
+  await navigateur.getByRole("button", { name: "Réessayer" }).click();
+  await navigateur.route("**/api/questions", (itineraire) => itineraire.fulfill({ json: [] }));
+  await navigateur.getByRole("link", { name: /Histoire/ }).click();
+  await expect(navigateur.getByRole("alert")).toContainText("au moins 10");
 });

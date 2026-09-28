@@ -1,59 +1,62 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getCategories, errorMessage } from "../lib/api";
+import { obtenirCategories, messageErreur } from "../lib/api";
 import type { Category } from "../lib/quiz";
-import { Feedback } from "../components/Feedback";
-import { categoryImage } from "../lib/categoryImage";
+import { MessageAlerte } from "../components/Feedback";
+import { imageCategorie } from "../lib/categoryImage";
 
 export function Categories() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
+  const [categories, definirCategories] = useState<Category[]>([]);
+  const [chargement, definirChargement] = useState(true);
+  const [erreur, definirErreur] = useState("");
+  const [tentative, definirTentative] = useState(0);
   useEffect(() => {
-    const controller = new AbortController();
-    setLoading(true);
-    setError("");
-    getCategories(controller.signal)
-      .then(setCategories)
-      .catch((e) => {
-        if (!controller.signal.aborted) setError(errorMessage(e));
+    const controleur = new AbortController();
+    definirChargement(true);
+    definirErreur("");
+    obtenirCategories(controleur.signal)
+      .then(definirCategories)
+      .catch((erreurRecue) => {
+        if (!controleur.signal.aborted) definirErreur(messageErreur(erreurRecue));
       })
       .finally(() => {
-        if (!controller.signal.aborted) setLoading(false);
+        if (!controleur.signal.aborted) definirChargement(false);
       });
-    return () => controller.abort();
-  }, [attempt]);
+    return () => controleur.abort();
+  }, [tentative]);
   return (
     <main className="content">
       <h1>Quiz par catégories</h1>
       <p className="intro">
         Choisissez une catégorie et testez vos connaissances.
       </p>
-      {loading ? (
+      {chargement ? (
         <p role="status" className="loading">
           On prépare les catégories…
         </p>
-      ) : error ? (
-        <Feedback message={error} retry={() => setAttempt((a) => a + 1)} />
+      ) : erreur ? (
+        <MessageAlerte
+          texte={erreur}
+          reessayer={() => definirTentative((ancienneTentative) => ancienneTentative + 1)}
+        />
       ) : categories.length === 0 ? (
-        <Feedback
-          message="Aucune catégorie n’est disponible pour le moment. Réessayez plus tard."
-          retry={() => setAttempt((a) => a + 1)}
+        <MessageAlerte
+          texte="Aucune catégorie n’est disponible pour le moment. Réessayez plus tard."
+          reessayer={() => definirTentative((ancienneTentative) => ancienneTentative + 1)}
         />
       ) : (
         <div className="categories">
-          {categories.map((c) => (
+          {categories.map((categorie) => (
             <Link
               className="category"
-              to={`/quiz/${encodeURIComponent(c.categorie)}`}
-              key={c.id}
+              to={`/quiz/${encodeURIComponent(categorie.categorie)}`}
+              key={categorie.id}
             >
               <div className="category-banner" aria-hidden="true">
-                <img src={categoryImage(c.categorie)} alt="" />
+                <img src={imageCategorie(categorie.categorie)} alt="" />
               </div>
               <div className="category-body">
-                <h2>{c.categorie}</h2>
+                <h2>{categorie.categorie}</h2>
                 <span className="category-play">
                   Jouer au quiz <span aria-hidden="true">→</span>
                 </span>

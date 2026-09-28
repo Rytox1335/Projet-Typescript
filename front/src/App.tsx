@@ -1,20 +1,23 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, NavLink, Route, Routes, useLocation } from "react-router-dom";
 import { Logo } from "./components/Logo";
-import { Home } from "./pages/Home";
+import { Accueil } from "./pages/Home";
 import { Categories } from "./pages/Categories";
 import { Quiz } from "./pages/Quiz";
-import { Results } from "./pages/Results";
+import { Resultats } from "./pages/Results";
 import type { Result } from "./lib/quiz";
 
-export function App() {
-  const [result, setResult] = useState<Result | null>(null);
-  const complete = useCallback((next: Result) => setResult(next), []);
-  const { pathname } = useLocation();
+export function Application() {
+  const [resultat, definirResultat] = useState<Result | null>(null);
+  const terminerPartie = useCallback(
+    (nouveauResultat: Result) => definirResultat(nouveauResultat),
+    [],
+  );
+  const { pathname: chemin } = useLocation();
   useEffect(() => {
     window.scrollTo(0, 0);
-    document.title = `${pathname === "/" ? "À vous de jouer" : pathname === "/categories" ? "Les catégories" : pathname === "/resultats" ? "Votre score" : "La partie"} · Culture Quiz`;
-  }, [pathname]);
+    document.title = `${chemin === "/" ? "À vous de jouer" : chemin === "/categories" ? "Les catégories" : chemin === "/resultats" ? "Votre score" : "La partie"} · Culture Quiz`;
+  }, [chemin]);
   return (
     <>
       <a className="skip-link" href="#main-content">
@@ -36,13 +39,13 @@ export function App() {
       </header>
       <div id="main-content">
         <Routes>
-          <Route path="/" element={<Home />} />
+          <Route path="/" element={<Accueil />} />
           <Route path="/categories" element={<Categories />} />
           <Route
             path="/quiz/:category"
-            element={<Quiz onComplete={complete} />}
+            element={<Quiz terminerPartie={terminerPartie} />}
           />
-          <Route path="/resultats" element={<Results result={result} />} />
+          <Route path="/resultats" element={<Resultats resultat={resultat} />} />
           <Route
             path="*"
             element={

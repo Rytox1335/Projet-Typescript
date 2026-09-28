@@ -1,47 +1,47 @@
 import type { Category, Question } from "./quiz";
-const base = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
+const urlBase = (import.meta.env.VITE_API_URL || "/api").replace(/\/$/, "");
 
-async function get(path: string, signal: AbortSignal): Promise<unknown> {
-  const response = await fetch(`${base}${path}`, {
-    signal,
+async function obtenirDonnees(cheminRequete: string, signalAnnulation: AbortSignal): Promise<unknown> {
+  const reponseHttp = await fetch(`${urlBase}${cheminRequete}`, {
+    signal: signalAnnulation,
     headers: { Accept: "application/json" },
   });
-  if (!response.ok)
+  if (!reponseHttp.ok)
     throw new Error(
-      `L’API ne répond pas correctement (erreur ${response.status}). Réessayez dans un instant.`,
+      `L’API ne répond pas correctement (erreur ${reponseHttp.status}). Réessayez dans un instant.`,
     );
-  return response.json();
+  return reponseHttp.json();
 }
-export async function getCategories(signal: AbortSignal): Promise<Category[]> {
-  const data = await get("/categories", signal);
+export async function obtenirCategories(signalAnnulation: AbortSignal): Promise<Category[]> {
+  const donnees = await obtenirDonnees("/categories", signalAnnulation);
   if (
-    !Array.isArray(data) ||
-    !data.every(
-      (c) => typeof c.id === "number" && typeof c.categorie === "string",
+    !Array.isArray(donnees) ||
+    !donnees.every(
+      (categorie) => typeof categorie.id === "number" && typeof categorie.categorie === "string",
     )
   )
     throw new Error("Le format des catégories reçu est invalide.");
-  return data;
+  return donnees;
 }
-export async function getQuestions(signal: AbortSignal): Promise<Question[]> {
-  const data = await get("/questions", signal);
+export async function obtenirQuestions(signalAnnulation: AbortSignal): Promise<Question[]> {
+  const donnees = await obtenirDonnees("/questions", signalAnnulation);
   if (
-    !Array.isArray(data) ||
-    !data.every(
-      (q) =>
-        typeof q.id === "number" &&
-        typeof q.categorie === "string" &&
-        typeof q.question === "string" &&
-        typeof q.reponse1 === "string",
+    !Array.isArray(donnees) ||
+    !donnees.every(
+      (question) =>
+        typeof question.id === "number" &&
+        typeof question.categorie === "string" &&
+        typeof question.question === "string" &&
+        typeof question.reponse1 === "string",
     )
   )
     throw new Error("Le format des questions reçu est invalide.");
-  return data;
+  return donnees;
 }
-export function errorMessage(error: unknown): string {
-  return error instanceof TypeError
+export function messageErreur(erreur: unknown): string {
+  return erreur instanceof TypeError
     ? "Impossible de joindre le serveur. Vérifiez votre connexion et le démarrage du back Laravel."
-    : error instanceof Error
-      ? error.message
+    : erreur instanceof Error
+      ? erreur.message
       : "Une erreur inattendue est survenue.";
 }

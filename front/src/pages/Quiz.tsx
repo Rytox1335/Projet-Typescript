@@ -1,37 +1,40 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { getQuestions, errorMessage } from "../lib/api";
-import { prepareQuiz, QUESTION_SECONDS, score } from "../lib/quiz";
+import { obtenirQuestions, messageErreur } from "../lib/api";
+import { preparerQuiz, DUREE_QUESTION_SECONDES, calculerScore } from "../lib/quiz";
 import type { Answer, Result, Round } from "../lib/quiz";
-import { Feedback } from "../components/Feedback";
+import { MessageAlerte } from "../components/Feedback";
 import backIcon from "../../img/icon/back arrow.png";
 
-export function Quiz({ onComplete }: { onComplete: (result: Result) => void }) {
-  const { category = "" } = useParams();
-  const [rounds, setRounds] = useState<Round[]>([]);
-  const [error, setError] = useState("");
-  const [attempt, setAttempt] = useState(0);
+export function Quiz({ terminarPartida }: { terminarPartida: (resultat: Result) => void }) {
+  const { category: categorie = "" } = useParams();
+  const [manches, definirManches] = useState<Round[]>([]);
+  const [erreur, definirErreur] = useState("");
+  const [tentative, definirTentative] = useState(0);
   useEffect(() => {
-    const controller = new AbortController();
-    setRounds([]);
-    setError("");
-    getQuestions(controller.signal)
-      .then((q) => setRounds(prepareQuiz(q, category)))
-      .catch((e) => {
-        if (!controller.signal.aborted) setError(errorMessage(e));
+    const controleur = new AbortController();
+    definirManches([]);
+    definirErreur("");
+    obtenirQuestions(controleur.signal)
+      .then((questions) => definirManches(preparerQuiz(questions, categorie)))
+      .catch((erreurRecue) => {
+        if (!controleur.signal.aborted) definirErreur(messageErreur(erreurRecue));
       });
-    return () => controller.abort();
-  }, [category, attempt]);
-  if (error)
+    return () => controleur.abort();
+  }, [categorie, tentative]);
+  if (erreur)
     return (
       <main className="content">
-        <Feedback message={error} retry={() => setAttempt((a) => a + 1)} />
+        <MessageAlerte
+          texte={erreur}
+          reessayer={() => definirTentative((ancienneTentative) => ancienneTentative + 1)}
+        />
         <Link className="text-link" to="/categories">
           ← Changer de catégorie
         </Link>
       </main>
     );
-  if (!rounds.length)
+  if (!manches.length)
     return (
       <main className="content">
         <p role="status" className="loading">
@@ -40,122 +43,122 @@ export function Quiz({ onComplete }: { onComplete: (result: Result) => void }) {
       </main>
     );
   return (
-    <Game
-      key={`${category}-${attempt}`}
-      rounds={rounds}
-      category={category}
-      onComplete={onComplete}
+    <Partie
+      key={`${categorie}-${tentative}`}
+      manches={manches}
+      categorie={categorie}
+      terminerPartie={terminerPartie}
     />
   );
 }
 
-function Game({
-  rounds,
-  category,
-  onComplete,
+function Partie({
+  manches,
+  categorie,
+  terminerPartie,
 }: {
-  rounds: Round[];
-  category: string;
-  onComplete: (result: Result) => void;
+  manches: Round[];
+  categorie: string;
+  terminerPartie: (resultat: Result) => void;
 }) {
-  const [answers, setAnswers] = useState<Answer[]>([]);
-  const [pending, setPending] = useState<Answer | null>(null);
-  const [remaining, setRemaining] = useState(QUESTION_SECONDS);
-  const locked = useRef(false);
-  const deadline = useRef(Date.now() + QUESTION_SECONDS * 1000);
-  const title = useRef<HTMLHeadingElement>(null);
-  const navigate = useNavigate();
-  const round = rounds[answers.length];
-  const submit = useCallback(
-    (selected: string | null) => {
-      if (locked.current) return;
-      locked.current = true;
-      setPending({
-        round,
-        selected: Date.now() >= deadline.current ? null : selected,
+  const [reponses, definirReponses] = useState<Answer[]>([]);
+  const [reponseEnAttente, definirReponseEnAttente] = useState<Answer | null>(null);
+  const [secondesRestantes, definirSecondesRestantes] = useState(DUREE_QUESTION_SECONDES);
+  const verrouillee = useRef(false);
+  const echeance = useRef(Date.now() + DUREE_QUESTION_SECONDES * 1000);
+  const titreQuestion = useRef<HTMLHeadingElement>(null);
+  const naviguer = useNavigate();
+  const manche = manches[reponses.length];
+  const soumettreReponse = useCallback(
+    (reponseChoisie: string | null) => {
+      if (verrouillee.current) return;
+      verrouillee.current = true;
+      definirReponseEnAttente({
+        round: manche,
+        selected: Date.now() >= echeance.current ? null : reponseChoisie,
       });
     },
-    [round],
+    [manche],
   );
 
   useEffect(() => {
-    title.current?.focus();
-    const tick = () => {
-      const seconds = Math.max(
+    titreQuestion.current?.focus();
+    const actualiserChronometre = () => {
+      const secondes = Math.max(
         0,
-        Math.ceil((deadline.current - Date.now()) / 1000),
+        Math.ceil((echeance.current - Date.now()) / 1000),
       );
-      setRemaining(seconds);
-      if (seconds === 0) submit(null);
+      definirSecondesRestantes(secondes);
+      if (secondes === 0) soumettreReponse(null);
     };
-    const timer = window.setInterval(tick, 100);
-    return () => window.clearInterval(timer);
-  }, [submit]);
+    const minuteur = window.setInterval(actualiserChronometre, 100);
+    return () => window.clearInterval(minuteur);
+  }, [soumettreReponse]);
 
   useEffect(() => {
-    if (!pending) return;
-    const timer = window.setTimeout(() => {
-      const next = [...answers, pending];
-      if (next.length === rounds.length) {
-        onComplete({ category, answers: next });
-        navigate("/resultats", { replace: true });
+    if (!reponseEnAttente) return;
+    const minuteur = window.setTimeout(() => {
+      const reponsesSuivantes = [...reponses, reponseEnAttente];
+      if (reponsesSuivantes.length === manches.length) {
+        terminerPartie({ category: categorie, answers: reponsesSuivantes });
+        naviguer("/resultats", { replace: true });
       } else {
-        deadline.current = Date.now() + QUESTION_SECONDS * 1000;
-        locked.current = false;
-        setRemaining(QUESTION_SECONDS);
-        setAnswers(next);
-        setPending(null);
+        echeance.current = Date.now() + DUREE_QUESTION_SECONDES * 1000;
+        verrouillee.current = false;
+        definirSecondesRestantes(DUREE_QUESTION_SECONDES);
+        definirReponses(reponsesSuivantes);
+        definirReponseEnAttente(null);
       }
     }, 1400);
-    return () => window.clearTimeout(timer);
-  }, [pending, answers, rounds.length, onComplete, category, navigate]);
+    return () => window.clearTimeout(minuteur);
+  }, [reponseEnAttente, reponses, manches.length, terminerPartie, categorie, naviguer]);
 
   return (
     <main className="content game">
       <div className="game-meta">
-        <span className="game-category">{category}</span>
+        <span className="game-category">{categorie}</span>
         <span
-          className={`timer ${remaining <= 5 ? "urgent" : ""}`}
+          className={`timer ${secondesRestantes <= 5 ? "urgent" : ""}`}
           role="timer"
-          aria-label={`${remaining} secondes restantes`}
+          aria-label={`${secondesRestantes} secondes restantes`}
         >
-          00:{String(remaining).padStart(2, "0")}
+          00:{String(secondesRestantes).padStart(2, "0")}
         </span>
       </div>
       <div className="question-meta">
         <span>
-          Question {answers.length + 1}{" "}
-          <span className="muted">/ {rounds.length}</span>
+          Question {reponses.length + 1}{" "}
+          <span className="muted">/ {manches.length}</span>
         </span>
         <span>
-          {score(answers)} point{score(answers) > 1 ? "s" : ""}
+          {calculerScore(reponses)} point{calculerScore(reponses) > 1 ? "s" : ""}
         </span>
       </div>
       <div className="time-track" aria-hidden="true">
-        <div style={{ width: `${(remaining / QUESTION_SECONDS) * 100}%` }} />
+        <div style={{ width: `${(secondesRestantes / DUREE_QUESTION_SECONDES) * 100}%` }} />
       </div>
-      <section key={round.id} className="question-enter">
-        <h1 className="question-title" ref={title} tabIndex={-1}>
-          {round.title}
+      <section key={manche.id} className="question-enter">
+        <h1 className="question-title" ref={titreQuestion} tabIndex={-1}>
+          {manche.title}
         </h1>
         <div className="choices">
-          {round.choices.map((choice) => {
-            const correct = pending && choice === round.correct;
-            const wrong = pending && pending.selected === choice && !correct;
+          {manche.choices.map((choix) => {
+            const estCorrecte = reponseEnAttente && choix === manche.correct;
+            const estIncorrecte = reponseEnAttente && reponseEnAttente.selected === choix && !estCorrecte;
             return (
               <button
-                className={`choice ${correct ? "correct" : ""} ${wrong ? "wrong" : ""}`}
-                disabled={!!pending}
-                onClick={() => submit(choice)}
-                key={choice}
+                className={`choice ${estCorrecte ? "correct" : ""} ${estIncorrecte ? "wrong" : ""}`}
+                disabled={!!reponseEnAttente}
+                onClick={() => soumettreReponse(choix)}
+                key={choix}
               >
-                <span>{choice}</span>
-                {(correct || wrong) && (
+                <span>{choix}</span>
+                {(estCorrecte || estIncorrecte) && (
                   <span
                     className="choice-mark"
-                    aria-label={correct ? "Bonne réponse" : "Mauvaise réponse"}
+                    aria-label={estCorrecte ? "Bonne réponse" : "Mauvaise réponse"}
                   >
-                    {correct ? "✓" : "×"}
+                    {estCorrecte ? "✓" : "×"}
                   </span>
                 )}
               </button>
@@ -164,10 +167,10 @@ function Game({
         </div>
       </section>
       <p className="answer-feedback" role="status">
-        {pending
-          ? pending.selected === null
+        {reponseEnAttente
+          ? reponseEnAttente.selected === null
             ? "Temps écoulé ! La bonne réponse est indiquée en vert."
-            : pending.selected === round.correct
+            : reponseEnAttente.selected === manche.correct
               ? "Bien joué ! C’est la bonne réponse."
               : "Pas cette fois ! La bonne réponse est indiquée en vert."
           : ""}

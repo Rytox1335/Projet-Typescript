@@ -1,16 +1,16 @@
-export function Feedback({
-  message,
-  retry,
+export function MessageAlerte({
+  texte,
+  reessayer,
 }: {
-  message: string;
-  retry?: () => void;
+  texte: string;
+  reessayer?: () => void;
 }) {
   return (
     <div className="notice" role="alert">
       <h2>Un petit contretemps</h2>
-      <p>{message}</p>
-      {retry && (
-        <button className="button" onClick={retry}>
+      <p>{texte}</p>
+      {reessayer && (
+        <button className="button" onClick={reessayer}>
           Réessayer ↻
         </button>
       )}

@@ -1,5 +1,5 @@
-export const QUESTION_COUNT = 10;
-export const QUESTION_SECONDS = 30;
+export const NOMBRE_QUESTIONS = 10;
+export const DUREE_QUESTION_SECONDES = 30;
 export interface Category {
   id: number;
   categorie: string;
@@ -26,47 +26,47 @@ export interface Result {
   answers: Answer[];
 }
 
-export function shuffle<T>(items: readonly T[]): T[] {
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
+export function melanger<T>(elements: readonly T[]): T[] {
+  const elementsMelanges = [...elements];
+  for (let indice = elementsMelanges.length - 1; indice > 0; indice--) {
+    const autreIndice = Math.floor(Math.random() * (indice + 1));
+    [elementsMelanges[indice], elementsMelanges[autreIndice]] = [elementsMelanges[autreIndice], elementsMelanges[indice]];
   }
-  return result;
+  return elementsMelanges;
 }
 
-export function prepareQuiz(questions: Question[], category: string): Round[] {
-  const eligible = questions
-    .filter((q) => q.categorie === category)
-    .map((q) => {
-      const correct = q.reponse1.trim();
-      const wrong = [
+export function preparerQuiz(questions: Question[], categorie: string): Round[] {
+  const questionsAdmissibles = questions
+    .filter((questionDonnee) => questionDonnee.categorie === categorie)
+    .map((questionDonnee) => {
+      const bonneReponse = questionDonnee.reponse1.trim();
+      const mauvaisesReponses = [
         ...new Set(
-          Array.from({ length: 9 }, (_, i) =>
-            String(q[`reponse${i + 2}`] ?? "").trim(),
+          Array.from({ length: 9 }, (_, indice) =>
+            String(questionDonnee[`reponse${indice + 2}`] ?? "").trim(),
           ),
         ),
-      ].filter((a) => a && a !== correct);
-      return { q, correct, wrong };
+      ].filter((reponse) => reponse && reponse !== bonneReponse);
+      return { questionDonnee, bonneReponse, mauvaisesReponses };
     })
     .filter(
-      ({ q, correct, wrong }) =>
-        q.question.trim() && correct && wrong.length >= 3,
+      ({ questionDonnee, bonneReponse, mauvaisesReponses }) =>
+        questionDonnee.question.trim() && bonneReponse && mauvaisesReponses.length >= 3,
     );
-  if (eligible.length < QUESTION_COUNT)
+  if (questionsAdmissibles.length < NOMBRE_QUESTIONS)
     throw new Error(
-      `Cette catégorie contient ${eligible.length} questions jouables. Il en faut au moins 10 pour commencer.`,
+      `Cette catégorie contient ${questionsAdmissibles.length} questions jouables. Il en faut au moins 10 pour commencer.`,
     );
-  return shuffle(eligible)
-    .slice(0, QUESTION_COUNT)
-    .map(({ q, correct, wrong }) => ({
-      id: q.id,
-      title: q.question,
-      correct,
-      choices: shuffle([correct, ...shuffle(wrong).slice(0, 3)]),
+  return melanger(questionsAdmissibles)
+    .slice(0, NOMBRE_QUESTIONS)
+    .map(({ questionDonnee, bonneReponse, mauvaisesReponses }) => ({
+      id: questionDonnee.id,
+      title: questionDonnee.question,
+      correct: bonneReponse,
+      choices: melanger([bonneReponse, ...melanger(mauvaisesReponses).slice(0, 3)]),
     }));
 }
 
-export function score(answers: Answer[]): number {
-  return answers.filter((a) => a.selected === a.round.correct).length;
+export function calculerScore(reponses: Answer[]): number {
+  return reponses.filter((reponse) => reponse.selected === reponse.round.correct).length;
 }

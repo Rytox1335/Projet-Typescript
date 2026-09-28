@@ -1,11 +1,11 @@
-export function categoryImage(name: string): string {
-  const normalized = name
+export function imageCategorie(nomCategorie: string): string {
+  const nomNormalise = nomCategorie
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase();
 
-  switch (normalized) {
+  switch (nomNormalise) {
     case "cinema":
       return "/img/cinema.jpg";
     case "geographie":
