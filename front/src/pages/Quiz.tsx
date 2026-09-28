@@ -6,7 +6,7 @@ import type { Answer, Result, Round } from "../lib/quiz";
 import { MessageAlerte } from "../components/Feedback";
 import backIcon from "../../img/icon/back arrow.png";
 
-export function Quiz({ terminarPartida }: { terminarPartida: (resultat: Result) => void }) {
+export function Quiz({ terminerPartie }: { terminerPartie: (resultat: Result) => void }) {
   const { category: categorie = "" } = useParams();
   const [manches, definirManches] = useState<Round[]>([]);
   const [erreur, definirErreur] = useState("");
